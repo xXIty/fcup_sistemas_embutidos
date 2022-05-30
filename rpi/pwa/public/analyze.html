@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cm-chessboard</title>
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/assets/styles/examples.css"/>
+    <link rel="stylesheet" href="/assets/styles/cm-chessboard.css"/>
+</head>
+<body>
+<h1><a href="../">cm-chessboard</a></h1>
+<h2>Example: Responsive chessboard with an aspect ratio of 0.9</h2>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<div id="board"></div>
+    <button id="but-prev" > *- </button>
+    <button id="but-next" > -* </button>
+<script type="module">
+    import {Chessboard} from "/js/Chessboard.js"
+
+    var board = new Chessboard(document.getElementById("board"), {
+        position: "start",
+        sprite: {url: "/assets/images/chessboard-sprite-staunty.svg"},
+        style: {
+            aspectRatio: 0.9
+        }
+    })
+    var fens = []
+    var index = 0;
+    var max = 0;
+    $.ajax({
+        url: '/',
+        dataType: 'json',
+        type: 'get',
+        success: function(data) { // check if available
+            console.log(index, data.length);
+            fens = data
+            max = fens.length-1;
+            index = max;
+            board.setPosition(fens[max]);
+            if ( false ) { // end of game?
+                    clearInterval(pollInterval); // optional: stop poll function
+            }
+        },
+        error: function() { // error logging
+              console.log('Error!');
+        }
+    });
+    
+
+    function decrementIndex() {
+        if(index > 0) {
+            index -= 1;
+            board.setPosition(fens[index]);
+        }
+    }
+    function incrementIndex() {
+        if (index < max) {
+            index += 1;
+            board.setPosition(fens[index]);
+        }
+    }
+
+    document.getElementById("but-prev").onclick = decrementIndex;
+    document.getElementById("but-next").onclick = incrementIndex;
+
+</script>
+
+</body>
+</html>
