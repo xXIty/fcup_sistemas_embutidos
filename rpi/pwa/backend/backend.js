@@ -39,6 +39,18 @@ db.run(
   }
 );
 
+db.run(
+  `CREATE TABLE eval (id INTEGER PRIMARY KEY, evaluation text NOT NULL)`,
+  (err) => {
+    if (err) {
+      // Table already created
+      console.log(err)
+    } else {
+      // Table just created, creating some rows
+    }
+  }
+);
+
 /////////////////////////
 // DB operations
 /////////////////////////
