@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="/manifest" href="manifest.json">
+    <title>Analyze</title>
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0"/>
+    <link rel="stylesheet" href="/assets/styles/examples.css"/>
+    <link rel="stylesheet" href="/assets/styles/cm-chessboard.css"/>
+</head>
+<body>
+<h2><a href="/">RETURN</a></h2>
+<h1>LIST</h1>
+
+<div id="deleteModal" class="modal">
+  <span onclick="document.getElementById('deleteModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+  <form id="deleteForm" class="modal-content" action="/game/" method="POST">
+    <div class="container">
+      <h2>Delete Game</h2>
+      <p id="pdelete">Are you sure you want to delete your account?</p>
+        
+        <button class="deletebtn">Delete</button>
+    </div>
+  </form>
+</div>
+<div id="editModal" class="modal">
+  <span onclick="document.getElementById('editModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+  <form id="editForm" class="modal-content" action="/game/" method="POST">
+    <div class="container">
+      <h2>Edit Game</h2>
+      <p id="pedit">update string</p>
+      <input type="text" id="nameinput" name="name"></input> 
+        
+        <button type="submit" class="deletebtn">Save</button>
+    </div>
+  </form>
+</div>
+<script>
+
+// Get the modal
+var modal = document.getElementById('deleteModal');
+modal.style.display='none';
+var emodal = document.getElementById('editModal');
+emodal.style.display='none';
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+  if (event.target == emodal) {
+    emodal.style.display = "none";
+  }
+}
+
+function openDeleteModal(gid, name) {
+    var form = document.getElementById('deleteForm');
+    form.action = `/game/${gid}/delete`;
+    var p = document.getElementById('pdelete');
+    p.innerText = `Are you sure you want to delete game ${gid} with name ${name}?`;
+    var modal = document.getElementById('deleteModal');
+    modal.style.display='block';
+    
+}
+
+function openEditModal(gid, name) {
+    var form = document.getElementById('editForm');
+    form.action = `/game/${gid}/edit`;
+    var textarea = document.getElementById('nameinput');
+    textarea.value = name;
+    var p = document.getElementById('pedit');
+    p.innerText = `Update the name for game ${gid}`;
+    var modal = document.getElementById('editModal');
+    modal.style.display='block';
+    
+}
+
+
+</script>
+<div id="gamelist">
+    <ul class="timeline">
+    <% for (var i = 0; i < games.length; i++) { %>
+        <li class="timeline-yellow">
+            <div class="gamebox" onclick="window.location='/analyze/<%= games[i].id %>'" >
+                <span style="text-align:left;">
+                <%= games[i].id %> </span>
+                <span style="font-weight:700;font-size:25px;line-height:20px;text-align:left;">
+                <%= games[i].name %> </span>
+                <span style="text-align:left">
+                <%= games[i].Timestamp %> </span>
+            </div>
+            <button onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
+            <button onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
+        </li>
+    <% } %>
+    </ul>
+</div>
+
+
+</body>
+</html>

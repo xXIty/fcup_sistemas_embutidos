@@ -73,7 +73,7 @@ module.exports = {
         db.run(insert, ["new_game"], (err) => {
             if (!err) {
                 selectMostRecentGame(game => {
-                    var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+                    var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                     db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen]);
 
                     res.redirect('/play');
