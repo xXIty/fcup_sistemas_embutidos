@@ -94,7 +94,7 @@ module.exports = {
     // GET: /current
     getCurrentGame: function (req, res) {
         selectMostRecentGame( game => {
-            db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY Timestamp `,
+            db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY Timestamp DESC`,
                     (err, rows)=> {
                         fens = rows.flatMap(r => r.fen);
                         currentGame = {gid: game.id, fens: fens, name: game.name}
