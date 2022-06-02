@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 
 import os
@@ -6,13 +7,10 @@ import chess
 import string
 import sqlite3
 
-# Named pipe command
-COM_GAME_START = "1"
 
-fifo_path = '../fifo_ipc'
-fifo = None
-db_connection = None
-cursor = None
+# Named pipe command
+COM_GAME_PLAY = "1"
+COM_PAWN_PROM = "2"
 
 
 def db_insert_fen(connection, game_id, fen):
@@ -26,9 +24,30 @@ def db_get_game_playing_id(connection):
     cursor =  connection.cursor()                                                      
     query  =  "select id from games order by Timestamp DESC limit 1"
     cursor.execute(query)
-    row = cursor.fetchone()
-    game_id = row['id']
-    return game_id
+    if row := cursor.fetchone():
+        game_id = row['id']
+        return game_id
+    else:
+        return None
+
+
+def db_get_fen_latest(connection, game_id):
+    connection.row_factory = sqlite3.Row                                                              
+    cursor =  connection.cursor()                                                      
+    query  =  "select fen from plays where gid = (?) order by Timestamp DESC limit 1"
+
+    cursor.execute(query, (str(game_id)))
+
+    if row := cursor.fetchone():
+        fen = row['fen']
+        return fen
+    else:
+        return None
+    
+def db_update_games_finished(db_connection, game_id, reason, winner):
+    query = "update games values (finished, reason, winner) values (?,?,?) where gid = (?)" 
+    cursor = db_connection.cursor()
+    cursor.execute(query, (True, reason, winner, game_id))
 
 
 def parse_position(p):
@@ -44,24 +63,7 @@ def uart_rec_move_mockup():
     return pos_begin, pos_end
 
 
-def game_play(game_id):
-
-    board = chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR")
-
-    while not board.is_checkmate():
-        begin, end = uart_rec_move_mockup()
-        move_uci = parse_position(begin)+parse_position(end) 
-        move_san = chess.Move.from_uci(move_uci)
-        print("Moviment: "+move_uci)
-        if(move_san in board.legal_moves):
-            board.push(move_san)
-            fen = board.fen()
-            db_insert_fen(db_connection, game_id, fen)
-            print("Inserit a la base de dades")
-        else:
-            print("Mal moviment")
-    
-def command_receive(fifo_path):
+def pipe_command_rec(fifo_path):
     try:
         os.mkfifo(fifo_path)
     except OSError as oe:
@@ -81,21 +83,61 @@ def command_receive(fifo_path):
             return command
 
 
+def game_play(db_connection, game_id):
+
+    print("[+] Game id: " + str(game_id))
+    fen_latest = db_get_fen_latest(db_connection, game_id)
+
+    board = chess.Board(fen_latest)
+    
+    while not board.is_game_over() :
+
+        #begin, end = uart_rec_move_mockup()
+
+        # If not playing dont process move 
+        if game_id != db_get_game_playing_id(db_connection):
+            break
+
+        # move_uci = parse_position(begin)+parse_position(end) 
+        move_uci = input("Insert a uci move (ex: a2a3): ")
+
+        move_san = chess.Move.from_uci(move_uci)
+        print("Moviment: "+move_uci)
+        if(move_san in board.legal_moves):
+            board.push(move_san)
+            fen = board.fen()
+            db_insert_fen(db_connection, game_id, fen)
+            print("Inserit a la base de dades")
+        else:
+            print("Mal moviment")
+
+    if board.is_game_over():
+        winner = "d" # (d)raw
+        game_outcome = board.outcome()
+
+        if game_outcome.winner:
+            winner = game_outcome.winner
+
+        db_update_games_finished(db_connection, game_id, game_outcome.termination, winner)
+
+    
 if __name__ == '__main__':
+    db_connection  =  None
+    db_path        =  '../pwa/db.sqlite'
+    fifo_path      =  '../fifo_ipc'
 
-    command_from_pwa = command_receive(fifo_path)
+    print("[+] Opening connection to sqlite")
+    db_connection  =  sqlite3.connect(db_path)
 
-    if command_from_pwa == COM_GAME_START:
+    while command_from_pwa := pipe_command_rec(fifo_path):
 
-        print("[+] Opening connection to sqlite")
-        db_path = '../pwa/db.sqlite'
-        db_connection = sqlite3.connect(db_path)
-        game_id = db_get_game_playing_id(db_connection)
-        game_play(game_id)
+        if command_from_pwa == COM_GAME_PLAY:
+            game_id =  db_get_game_playing_id(db_connection)
+            game_play(db_connection, game_id)
 
-    else:
-        print(command_from_pwa)
-        print("Unknown command from pipe")
+        else:
+            print(command_from_pwa)
+            print("Unknown command from pipe")
 
 
 
