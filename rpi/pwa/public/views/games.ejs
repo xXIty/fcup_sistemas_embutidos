@@ -88,6 +88,9 @@ function openEditModal(gid, name) {
                 <%= games[i].name %> </span>
                 <span style="text-align:left">
                 <%= games[i].Timestamp %> </span>
+                <% if (!games[i].finished) { %>
+                    <button onclick="window.location='/play/<%= games[i].id %>'">Play</button>
+                <% } %>
                 <button onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
                 <button onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
             </div>

@@ -15,9 +15,9 @@ app.get("/", function (req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-app.post("/play/new", function (req, res) {
-    be.createNewGameAndRedirect(req, res);
 
+app.get("/play/:gid", function (req, res) {
+    be.setPlayingAndRedirect(req, res);
 });
 
 app.get("/play", function (req, res) {
@@ -34,6 +34,11 @@ app.get("/analyze", function (req, res) {
 });
 app.get("/analyze/:gid", function(req, res) {
     be.analyzeGame(req, res);
+});
+
+app.post("/game/new", function (req, res) {
+    be.createNewGameAndRedirect(req, res);
+
 });
 
 app.post("/game/:gid/delete", function (req, res) {

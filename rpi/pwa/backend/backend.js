@@ -23,12 +23,16 @@ fs.readFile('./db/createTables.sql', 'utf8', (err, data) => {
         console.error(err);
         return;
     }
-    data.split('\n').forEach( line => {
-        if (line !== "") {
-            db.run(line, (err) => {
-                if(err) console.log("Warning: Using existing tables");
-            });
-        }
+
+    db.serialize( () => {
+        data.toString().split('\n').forEach( line => {
+            if (line) {
+                db.run(line, (err) => {
+                    console.log(line)
+                    if(err) console.log(err);//console.log("Warning: Using existing tables");
+                });
+            }
+        });
     });
 });
 
@@ -36,9 +40,10 @@ fs.readFile('./db/createTables.sql', 'utf8', (err, data) => {
 // DB operations
 /////////////////////////
 function selectMostRecentGame(callback) {
-    db.get("SELECT id FROM games ORDER BY timestamp DESC", (err, row)=>{
+    db.get("SELECT * FROM games WHERE playing = true LIMIT 1", (err, row)=>{
         if(err) {
             //handle error
+            console.log(`currentERROR: ${err}`)
         } else {
             callback(row);
         }
@@ -60,10 +65,13 @@ function selectGames(callback) {
 // Backend operations
 /////////////////////////
 module.exports = {
-    // POST: /play/new
+    // POST: /game/new
     createNewGameAndRedirect: function (req, res) {
-        var insert = "INSERT INTO games (name) VALUES (?)";
-        db.run(insert, ["new_game"], (err) => {
+
+        console.log(`POST /game/new : createNewGameAndRedirect`)
+        var insert = "INSERT INTO games (name, playing, finished) VALUES ('new_game',true,false)";
+        db.run(insert, (err) => {
+            console.log(err)
             if (!err) {
                 selectMostRecentGame(game => {
                     var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -77,6 +85,7 @@ module.exports = {
     },
     // POST: /fen
     addNewFen: function (req, res) {
+        console.log(`POST /fen : addNewFen`)
         selectMostRecentGame(game => {
             var fen = req.params.fen;
             db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen]);
@@ -85,14 +94,26 @@ module.exports = {
     },
     // GET: /analyze/:gid
     analyzeGame: function(req, res) {
+        console.log(`GET /analize/${req.params.gid} : analyzeGame`)
         db.all(`SELECT fen FROM plays WHERE gid = ${req.params.gid}  ORDER BY timestamp `, (err, rows) => {
-            //console.log(rows);
             fens = rows.flatMap(r => r.fen);
             res.render("analyze", {fens: fens});
         });
     },
+    // GET: /play/:gid
+    setPlayingAndRedirect: function (req, res) {
+        console.log(`GET /play/${req.params.gid} : setPlayingAndRedirect`)
+        db.run(`UPDATE games SET playing = true WHERE id = ${req.params.gid}`, (err, rows) => {
+            console.log(err)
+            console.log(rows)
+            res.redirect('/play')
+
+        });
+
+    },
     // GET: /current
     getCurrentGame: function (req, res) {
+        console.log(`GET /current : setPlayingAndRedirect`)
         selectMostRecentGame( game => {
             db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
                     (err, rows)=> {
