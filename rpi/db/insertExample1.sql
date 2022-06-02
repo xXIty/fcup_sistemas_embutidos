@@ -1,7 +1,7 @@
 DELETE FROM games WHERE name='Example1';
-INSERT INTO games (name) 
+INSERT INTO games (name, playing, finished) 
 	VALUES 
-    ('Example1');
+    ('Example1', false, false);
 INSERT INTO plays (fen, gid) 
 	VALUES 
     ('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', (SELECT id FROM games WHERE name='Example1' LIMIT 1)), 

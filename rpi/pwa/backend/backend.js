@@ -1,40 +1,22 @@
 const sqlite3 = require("sqlite3");
 const fs = require('fs');
+
 /////////////////////////
 // Establish DB connection
 /////////////////////////
+const DB_NAME = "db/db.sqlite"
 
-const db = new sqlite3.Database("db.sqlite", (err) => {
-  if (err) {
-    // Cannot open database
-    console.error(err.message);
-    throw err;
-  } else {
-    console.log("Connected to the SQLite database.");
-  }
-});
-
-/////////////////////////
-// Create tables
-/////////////////////////
-
-fs.readFile('./db/createTables.sql', 'utf8', (err, data) => {
+const db = new sqlite3.Database(DB_NAME, (err) => {
     if (err) {
-        console.error(err);
-        return;
+        // Cannot open database
+        console.error(err.message);
+        throw err;
+    } else {
+        console.log("Connected to the SQLite database.");
+        db.run("PRAGMA foreign_keys = ON;")
     }
-
-    db.serialize( () => {
-        data.toString().split('\n').forEach( line => {
-            if (line) {
-                db.run(line, (err) => {
-                    console.log(line)
-                    if(err) console.log(err);//console.log("Warning: Using existing tables");
-                });
-            }
-        });
-    });
 });
+
 
 /////////////////////////
 // DB operations
