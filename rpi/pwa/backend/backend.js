@@ -1,4 +1,5 @@
 const sqlite3 = require("sqlite3");
+const fs = require('fs');
 /////////////////////////
 // Establish DB connection
 /////////////////////////
@@ -16,40 +17,20 @@ const db = new sqlite3.Database("db.sqlite", (err) => {
 /////////////////////////
 // Create tables
 /////////////////////////
-db.run(`PRAGMA foreign_keys = ON`);
-db.run( `CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, name text,Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)`,
-  (err) => {
-    if (err) {
-      console.log(err)
-      // Table already created
-    } else {
-      // Table just created, creating some rows
-    }
-  }
-);
-db.run(
-  `CREATE TABLE plays (id INTEGER PRIMARY KEY AUTOINCREMENT, fen text NOT NULL, Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, gid INTEGER NOT NULL, FOREIGN KEY (gid) REFERENCES games (id) ON DELETE CASCADE)`,
-  (err) => {
-    if (err) {
-      // Table already created
-      console.log(err)
-    } else {
-      // Table just created, creating some rows
-    }
-  }
-);
 
-db.run(
-  `CREATE TABLE eval (id INTEGER PRIMARY KEY, evaluation text NOT NULL)`,
-  (err) => {
+fs.readFile('./db/createTables.sql', 'utf8', (err, data) => {
     if (err) {
-      // Table already created
-      console.log(err)
-    } else {
-      // Table just created, creating some rows
+        console.error(err);
+        return;
     }
-  }
-);
+    data.split('\n').forEach( line => {
+        if (line !== "") {
+            db.run(line, (err) => {
+                if(err) console.log("Warning: Using existing tables");
+            });
+        }
+    });
+});
 
 /////////////////////////
 // DB operations
