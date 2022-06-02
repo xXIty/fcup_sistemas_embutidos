@@ -28,6 +28,7 @@
     var fens = []
      var index = 0;
      var max = 0;
+    var current = "";
     (function() {
         var poll = function() {
           $.ajax({
@@ -38,9 +39,16 @@
                 console.log(index, data.fens.length);
                 fens = data.fens
                 if( index == max) { // Most recent on last poll, check updates
-                    index = max = fens.length-1;
-                    console.log(`Setting ${index}, ${fens[index]}`);
-                    board.setPosition(fens[index]);
+                    if (fens.length-1 > max) {
+                        console.log(`Setting ${index}, ${fens[index]}`);
+                        index = max = fens.length-1;
+                        if( current != fens[index] ) {
+                            board.setPosition(fens[index]);
+                            current = fens[index];
+                        } else {
+                            console.log("SAME POS!!")
+                        }
+                    }
                 }
                 if ( false ) { // end of game?
                     clearInterval(pollInterval); // optional: stop poll function

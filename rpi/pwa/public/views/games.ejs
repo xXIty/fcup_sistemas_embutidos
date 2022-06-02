@@ -81,16 +81,16 @@ function openEditModal(gid, name) {
     <ul class="timeline">
     <% for (var i = 0; i < games.length; i++) { %>
         <li class="timeline-yellow">
-            <div class="gamebox" onclick="window.location='/analyze/<%= games[i].id %>'" >
+            <div class="gamebox" >
                 <span style="text-align:left;">
                 <%= games[i].id %> </span>
-                <span style="font-weight:700;font-size:25px;line-height:20px;text-align:left;">
+                <span style="font-weight:700;font-size:25px;line-height:20px;text-align:left;" onclick="window.location='/analyze/<%= games[i].id %>'" >
                 <%= games[i].name %> </span>
                 <span style="text-align:left">
                 <%= games[i].Timestamp %> </span>
+                <button onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
+                <button onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
             </div>
-            <button onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
-            <button onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
         </li>
     <% } %>
     </ul>
