@@ -36,7 +36,7 @@ fs.readFile('./db/createTables.sql', 'utf8', (err, data) => {
 // DB operations
 /////////////////////////
 function selectMostRecentGame(callback) {
-    db.get("SELECT id FROM games ORDER BY Timestamp DESC", (err, row)=>{
+    db.get("SELECT id FROM games ORDER BY timestamp DESC", (err, row)=>{
         if(err) {
             //handle error
         } else {
@@ -46,7 +46,7 @@ function selectMostRecentGame(callback) {
 }
 
 function selectGames(callback) {
-    db.all(`SELECT * FROM games ORDER BY Timestamp DESC `,
+    db.all(`SELECT * FROM games ORDER BY timestamp DESC `,
         (err, row) => {
             if(err) {
                 //handle error
@@ -85,7 +85,7 @@ module.exports = {
     },
     // GET: /analyze/:gid
     analyzeGame: function(req, res) {
-        db.all(`SELECT fen FROM plays WHERE gid = ${req.params.gid}  ORDER BY Timestamp `, (err, rows) => {
+        db.all(`SELECT fen FROM plays WHERE gid = ${req.params.gid}  ORDER BY timestamp `, (err, rows) => {
             //console.log(rows);
             fens = rows.flatMap(r => r.fen);
             res.render("analyze", {fens: fens});
@@ -94,7 +94,7 @@ module.exports = {
     // GET: /current
     getCurrentGame: function (req, res) {
         selectMostRecentGame( game => {
-            db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY Timestamp DESC`,
+            db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
                     (err, rows)=> {
                         fens = rows.flatMap(r => r.fen);
                         currentGame = {gid: game.id, fens: fens, name: game.name}
