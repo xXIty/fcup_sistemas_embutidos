@@ -33,7 +33,7 @@ db_setup: ${DB_PREPARE_SOURCES}
 
 .PHONY: pwa
 pwa: db_setup ${PWA_PATH}
-	node ${PWA_PATH}
+	node ${PWA_PATH} ${FIFO_NAME}
 
 
 .PHONY: engine

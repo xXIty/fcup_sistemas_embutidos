@@ -48,7 +48,7 @@ function selectGames(callback) {
 /////////////////////////
 module.exports = {
     // POST: /game/new
-    createNewGameAndRedirect: function (req, res) {
+    createNewGameAndRedirect: function (req, res, fifo_path) {
 
         console.log(`POST /game/new : createNewGameAndRedirect`)
         var insert = "INSERT INTO games (name, playing, finished) VALUES ('new_game',true,false)";
@@ -57,7 +57,11 @@ module.exports = {
             if (!err) {
                 selectMostRecentGame(game => {
                     var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-                    db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen]);
+                    db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen], (err) => {
+                        var fifo = fs.createWriteStream(fifo_path);
+                        fifo.write('1');
+                        fifo.close();
+                    });
 
                     res.redirect('/play');
                 });

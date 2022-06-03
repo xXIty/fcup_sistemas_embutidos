@@ -3,6 +3,8 @@ const path = require("path");
 const app = express();
 const be = require("./backend/backend.js")
 
+const fifo_path = process.argv[2];
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'public/views'))
 
@@ -42,7 +44,7 @@ app.get("/analyze/:gid", function(req, res) {
 });
 
 app.post("/game/new", function (req, res) {
-    be.createNewGameAndRedirect(req, res);
+    be.createNewGameAndRedirect(req, res, fifo_path);
 
 });
 
