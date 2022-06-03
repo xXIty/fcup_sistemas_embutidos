@@ -5,62 +5,90 @@
     <link rel="/manifest" href="manifest.json">
     <title>Analyze</title>
     <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0"/>
-    <link rel="stylesheet" href="/assets/styles/examples.css"/>
-    <link rel="stylesheet" href="/assets/styles/cm-chessboard.css"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
 </head>
 <body>
-<h2><a href="/">RETURN</a></h2>
-<h1>LIST</h1>
 
-<div id="deleteModal" class="modal">
-  <span onclick="document.getElementById('deleteModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+<%- include('header') %>
+
+<div class="container" id="gamelist">
+    <ul class="list-group list-group-flush">
+    <% for (var i = 0; i < games.length; i++) { %>
+        <li class="list-group-item">
+            <div class="container" >
+                  <div class="row">
+                    <div class="col-6">
+                        <%= games[i].id %>
+                        <span onclick="window.location='/analyze/<%= games[i].id %>'" >
+                        <%= games[i].name %> </span>
+                        <span style="text-align:left">
+                        <%= games[i].Timestamp %> </span>
+                    </div>
+                    <div class="col-6">
+                        <% if (!games[i].finished) { %>
+                            <button class="btn btn-success" onclick="window.location='/play/<%= games[i].id %>'">Play</button>
+                        <% } %>
+                        
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal" onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
+                    
+                    </div>
+                  </div>
+            </div>
+        </li>
+    <% } %>
+    </ul>
+</div>
+
+<!-- Modal -->
+<div class="modal" tabindex="-1" id="deleteModal">
+<div class="modal-dialog modal-dialog-centered" >
   <form id="deleteForm" class="modal-content" action="/game/" method="POST">
-    <div class="container">
-      <h2>Delete Game</h2>
-      <p id="pdelete">Are you sure you want to delete your account?</p>
-        
-        <button class="deletebtn">Delete</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Delete game</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p id="pdelete"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
     </div>
   </form>
 </div>
-<div id="editModal" class="modal">
-  <span onclick="document.getElementById('editModal').style.display='none'" class="close" title="Close Modal">&times;</span>
+</div>
+
+<div class="modal" tabindex="-1" id="editModal">
+<div class="modal-dialog modal-dialog-centered" >
   <form id="editForm" class="modal-content" action="/game/" method="POST">
-    <div class="container">
-      <h2>Edit Game</h2>
-      <p id="pedit">update string</p>
-      <input type="text" id="nameinput" name="name"></input> 
-        
-        <button type="submit" class="deletebtn">Save</button>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Update game name</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="nameinput" name="name"></input> 
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
     </div>
   </form>
+</div>
 </div>
 <script>
 
-// Get the modal
-var modal = document.getElementById('deleteModal');
-modal.style.display='none';
-var emodal = document.getElementById('editModal');
-emodal.style.display='none';
-
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-  if (event.target == emodal) {
-    emodal.style.display = "none";
-  }
-}
-
+//// Get the modal
 function openDeleteModal(gid, name) {
     var form = document.getElementById('deleteForm');
     form.action = `/game/${gid}/delete`;
     var p = document.getElementById('pdelete');
     p.innerText = `Are you sure you want to delete game ${gid} with name ${name}?`;
-    var modal = document.getElementById('deleteModal');
-    modal.style.display='block';
-    
 }
 
 function openEditModal(gid, name) {
@@ -68,37 +96,9 @@ function openEditModal(gid, name) {
     form.action = `/game/${gid}/edit`;
     var textarea = document.getElementById('nameinput');
     textarea.value = name;
-    var p = document.getElementById('pedit');
-    p.innerText = `Update the name for game ${gid}`;
-    var modal = document.getElementById('editModal');
-    modal.style.display='block';
-    
 }
 
-
 </script>
-<div id="gamelist">
-    <ul class="timeline">
-    <% for (var i = 0; i < games.length; i++) { %>
-        <li class="timeline-yellow">
-            <div class="gamebox" >
-                <span style="text-align:left;">
-                <%= games[i].id %> </span>
-                <span style="font-weight:700;font-size:25px;line-height:20px;text-align:left;" onclick="window.location='/analyze/<%= games[i].id %>'" >
-                <%= games[i].name %> </span>
-                <span style="text-align:left">
-                <%= games[i].Timestamp %> </span>
-                <% if (!games[i].finished) { %>
-                    <button onclick="window.location='/play/<%= games[i].id %>'">Play</button>
-                <% } %>
-                <button onclick="openEditModal(<%= games[i].id %>, '<%= games[i].name %>')">Edit</button>
-                <button onclick="openDeleteModal(<%= games[i].id %>, '<%= games[i].name %>')">Delete</button>
-            </div>
-        </li>
-    <% } %>
-    </ul>
-</div>
-
-
+<script src="/js/bootstrap.min.js"></script>
 </body>
 </html>
