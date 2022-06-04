@@ -43,6 +43,13 @@ function selectGames(callback) {
         });
 }
 
+function writeToPipe(path, message) {
+    var fifo = fs.createWriteStream(path);
+    fifo.write(message)
+    fifo.close()
+
+}
+
 /////////////////////////
 // Backend operations
 /////////////////////////
@@ -56,9 +63,7 @@ module.exports = {
                 selectMostRecentGame(game => {
                     var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                     db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen], (err) => {
-                        var fifo = fs.createWriteStream(fifo_path);
-                        fifo.write('1')
-                        fifo.close()
+                        writeToPipe(fifo_path,'1'); 
                     });
 
                     res.redirect('/play')
@@ -85,8 +90,7 @@ module.exports = {
     // GET: /play/:gid
     setPlayingAndRedirect: function (req, res) {
         db.run(`UPDATE games SET playing = true WHERE id = ${req.params.gid}`, (err, rows) => {
-            console.log(err)
-            console.log(rows)
+            writeToPipe(fifo_path,'1'); 
             res.redirect('/play')
 
         });
