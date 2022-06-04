@@ -27,7 +27,7 @@ app.get("/", function (req, res) {
 });
 
 
-app.get("/play/:gid", function (req, res, fifo_path) {
+app.get("/play/:gid", function (req, res) {
     console.log(`GET /play/${req.params.gid} : setPlayingAndRedirect`)
     be.setPlayingAndRedirect(req, res, fifo_path);
 });
