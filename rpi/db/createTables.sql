@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS
     finished BOOL NOT NULL DEFAULT FALSE,
     reason INT, 
     winner CHAR,
+    interaction BOOL NOT NULL DEFAULT false,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
