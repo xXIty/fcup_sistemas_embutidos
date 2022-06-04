@@ -19,23 +19,24 @@
 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">PROMO TEST</button>
 
 <!-- Modal -->
-<div class="modal" tabindex="-1" id="promoModal">
-<div class="modal-dialog modal-dialog-centered" >
-  <form id="deleteForm" class="modal-content" action="/game/promotion" method="POST">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">Choose</h5>
-            <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
-        </div>
-        <div class="modal-body">
-        </div>
-        <div class="modal-footer">
+<div class="modal fade" id="promoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="promoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Choose</h5>
+                <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+            </div>
+            <div class="modal-body">
+              <form id="promoForm" class="modal-content" action="/game/promotion" method="POST">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </form>
+            </div>
+            <div class="modal-footer">
             <!--<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
             <!--<button type="submit" class="btn btn-danger">Delete</button> -->
+            </div>
         </div>
     </div>
-  </form>
-</div>
 </div>
 
 <script src="/js/bootstrap.min.js"></script>

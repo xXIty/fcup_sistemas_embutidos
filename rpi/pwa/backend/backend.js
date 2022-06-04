@@ -88,7 +88,7 @@ module.exports = {
         });
     },
     // GET: /play/:gid
-    setPlayingAndRedirect: function (req, res) {
+    setPlayingAndRedirect: function (req, res, fifo_path) {
         db.run(`UPDATE games SET playing = true WHERE id = ${req.params.gid}`, (err, rows) => {
             writeToPipe(fifo_path,'1'); 
             res.redirect('/play')
