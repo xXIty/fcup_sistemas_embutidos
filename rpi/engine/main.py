@@ -95,8 +95,11 @@ def pipe_command_rec(fifo_path):
             print("[+] New game command recived")
             return command
 
-# Extra game logic
-# ----------------
+
+
+
+# Game maintainance
+# -----------------
 
 def is_promoting(board: chess.Board, move: chess.Move) -> bool:
      """
@@ -122,9 +125,6 @@ def is_promoting(board: chess.Board, move: chess.Move) -> bool:
 
      return True
 
-
-# Game maintainance
-# -----------------
 
 def get_board_move_uci(db_connection):
     move_begin  =  None
@@ -152,6 +152,35 @@ def get_board_move_uci(db_connection):
     move_uci = chess.SQUARE_NAMES[move_begin] + chess.SQUARE_NAMES[move_end] 
     return game_id, move_uci
 
+def board_make_move_uci(db_connection, game_id, board, move_uci, fifo_path):
+    move_san = None
+    try:
+        move_san  =  chess.Move.from_uci(move_uci)
+    except ValueError as ve:
+        print("\t[+] Moviment mal formatat. Error: "+str(ve))
+
+    if(is_promoting(board, move_san)):
+        # Is a promotion. Need to ask the user.
+        print("\t[+] Move is a pawn promotion")
+        db_set_promotion_handle(db_connection, game_id)
+        sleep(1)
+
+        piece_sym = ""
+        with open(fifo_path) as fifo:
+            piece_sym = fifo.read(1)
+
+        piece = chess.Piece.from_symbol(piece_sym)
+        move_san.promotion = piece.piece_type
+        print("\t[+] Generating new move {} with promotion of piece {}".format(move_uci,piece.symbol()))
+
+    if(move_san in board.legal_moves):
+        board.push(move_san)
+        fen = board.fen()
+        db_insert_fen(db_connection, game_id, fen)
+        print("\t[+] Move done successfully")
+    else:
+        print("\t[!] Bad move")
+
 
 def game_playing_play(db_connection):
     game_id     =  db_get_game_playing_id(db_connection)
@@ -165,11 +194,6 @@ def game_playing_play(db_connection):
         move_uci     =  board_move[1]
         move_uci = input("Insert a uci move (ex: a2a3): ") # quick way to play (mock)
 
-        move_san = None
-        try:
-            move_san     =  chess.Move.from_uci(move_uci)
-        except ValueError as ve:
-            print("\t[+] Moviment mal formatat. Error: "+str(ve))
 
         # Update board if game has changed
         if game_id != game_id_aux: 
@@ -181,29 +205,9 @@ def game_playing_play(db_connection):
         # Process move
         print("\t[+] FEN: " + str(fen_latest))
         print("\t[+] Processing move: " + move_uci)
-        if(is_promoting(board, move_san)):
-                # Is a promotion. Need to ask the user.
-                print("\t[+] Move is a pawn promotion")
-                db_set_promotion_handle(db_connection, game_id)
-                sleep(1)
+        board_make_move_uci(db_connection, game_id, board, move_uci, fifo_path)
 
-                fifo = open(fifo_path)
-                piece_sym = ""
-                piece_sym = fifo.read(1)
-
-                piece = chess.Piece.from_symbol(piece_sym)
-                move_san.promotion = piece.piece_type
-                print("\t[+] Generating new move {} with promotion of piece {}".format(move_uci,piece.symbol()))
-
-
-        if(move_san in board.legal_moves):
-            board.push(move_san)
-            fen = board.fen()
-            db_insert_fen(db_connection, game_id, fen)
-            print("\t[+] Move done successfully")
-        else:
-            print("\t[!] Bad move")
-
+        # Handle game over
         if board.is_game_over():
             print("\t[+] Game finished, updating stats")
             game_outcome = board.outcome()
