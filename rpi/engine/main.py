@@ -7,6 +7,7 @@ import errno
 import chess
 import string
 import sqlite3
+from time import sleep
 
 
 # Named pipe command
@@ -57,7 +58,7 @@ def db_update_games_finished(db_connection, game_id, reason, winner):
 def db_set_promotion_handle(db_connection, game_id):
     query = "UPDATE games SET interaction = true WHERE id = (?);"
     cursor = db_connection.cursor()
-    cursor.execute(query, (game_id))
+    cursor.execute(query, (str(game_id)))
     db_connection.commit()
 
 
@@ -97,29 +98,29 @@ def pipe_command_rec(fifo_path):
 # Extra game logic
 # ----------------
 
-    def is_promoting(board: chess.Board, move: chess.Move) -> bool:
-         """
-         Checks whether the *move* is either a white pawn or a black pawn attempting
-         to promote.
-         Returns ``True`` only if all conditions are met. These conditions include
-         that the piece is actually a pawn, it is attempting to move from the
-         pre-last to the last rank and is not pinned to its king. Also, the target
-         square must be vacant or a legal capture.
-         """
-         piece_type = board.piece_type_at(move.from_square)
+def is_promoting(board: chess.Board, move: chess.Move) -> bool:
+     """
+     Checks whether the *move* is either a white pawn or a black pawn attempting
+     to promote.
+     Returns ``True`` only if all conditions are met. These conditions include
+     that the piece is actually a pawn, it is attempting to move from the
+     pre-last to the last rank and is not pinned to its king. Also, the target
+     square must be vacant or a legal capture.
+     """
+     piece_type = board.piece_type_at(move.from_square)
 
-         if piece_type != PAWN:
-             return False
+     if piece_type != chess.PAWN:
+         return False
 
-         if board.turn and square_rank(move.to_square) != 7:
-             return False
-         elif not board.turn and square_rank(move.to_square) != 0:
-             return False
+     if board.turn and chess.square_rank(move.to_square) != 7:
+         return False
+     elif not board.turn and chess.square_rank(move.to_square) != 0:
+         return False
 
-         if move.uci() not in [move.uci()[0:4] for move in board.legal_moves]:
-             return False
+     if move.uci() not in [move.uci()[0:4] for move in board.legal_moves]:
+         return False
 
-         return True
+     return True
 
 
 # Game maintainance
@@ -180,23 +181,19 @@ def game_playing_play(db_connection):
         # Process move
         print("\t[+] FEN: " + str(fen_latest))
         print("\t[+] Processing move: " + move_uci)
-        if(is_promoting(board, move_san):
+        if(is_promoting(board, move_san)):
                 # Is a promotion. Need to ask the user.
                 print("\t[+] Move is a pawn promotion")
                 db_set_promotion_handle(db_connection, game_id)
                 sleep(1)
+
                 fifo = open(fifo_path)
                 piece_sym = ""
-                while True:
-                    command = fifo.read(1)
-                    if command == "2":
-                        piece_sym = fifo.read(1)
-                        break
-                    else 
-                        continue
+                piece_sym = fifo.read(1)
+
                 piece = chess.Piece.from_symbol(piece_sym)
+                move_san.promotion = piece.piece_type
                 print("\t[+] Generating new move {} with promotion of piece {}".format(move_uci,piece.symbol()))
-                move_san.promotion = piece
 
 
         if(move_san in board.legal_moves):
