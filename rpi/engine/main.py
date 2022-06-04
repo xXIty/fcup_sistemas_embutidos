@@ -66,6 +66,9 @@ def uart_rec_square():
     return uart_rec_square_mockup()
 
 
+# Named PIPE handling
+# --------------------
+
 def pipe_command_rec(fifo_path):
     try:
         os.mkfifo(fifo_path)
@@ -126,7 +129,7 @@ def game_playing_play(db_connection):
     while board_move := get_board_move_uci(db_connection):
         game_id_aux  =  board_move[0]
         move_uci     =  board_move[1]
-        #move_uci = input("Insert a uci move (ex: a2a3): ") # quick way to play (mock)
+        move_uci = input("Insert a uci move (ex: a2a3): ") # quick way to play (mock)
 
         move_san     =  chess.Move.from_uci(move_uci)
 
@@ -136,9 +139,9 @@ def game_playing_play(db_connection):
             fen_latest  =  db_get_fen_latest(db_connection, game_id)
             board.set_fen(fen_latest)
             print("\t[+] New game: " + str(game_id))
-            print("\t[+] FEN: " + str(fen_latest))
 
         # Process move
+        print("\t[+] FEN: " + str(fen_latest))
         print("\t[+] Processing move: " + move_uci)
         if(move_san in board.legal_moves):
             board.push(move_san)
@@ -153,9 +156,9 @@ def game_playing_play(db_connection):
             game_outcome = board.outcome()
 
             winner = "d" # (d)raw
-            if game_outcome.winner == True:
+            if game_outcome.winner == chess.WHITE:
                 winner = "w" # (w)hite
-            elif game_outcome.winner == False:
+            elif game_outcome.winner == chess.BLACK:
                 winner = "b" # (b)lack
 
             db_update_games_finished(db_connection,
