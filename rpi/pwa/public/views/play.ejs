@@ -13,10 +13,28 @@
 <%- include('header') %>
 <h2>Current Game</h2>
 
+<script src="/js/bootstrap.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script type="module" src="/js/play.js"> </script>
+<script>
+function sendPromoPiece(piece) {
+    $.ajax({
+            type: 'post',
+            url: '/game/promotion',
+            data: JSON.stringify({piece: piece}),
+            contentType: "application/json; charset=utf-8",
+            traditional: true,
+            success: function (data) {
+                console.log(data)
+            }
+        });
+    return 0;
+}
+</script>
+
 <div id="board"></div>
 <button class="btn btn-dark" id="but-prev" ><i class="bi bi-arrow-left"></i></button>
 <button class="btn btn-dark" id="but-next" ><i class="bi bi-arrow-right"></i></button>
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#promoModal">PROMO TEST</button>
 
 <!-- Modal -->
 <div class="modal fade" id="promoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="promoModalLabel" aria-hidden="true">
@@ -27,9 +45,66 @@
                 <!--<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
             </div>
             <div class="modal-body">
-              <form id="promoForm" class="modal-content" action="/game/promotion" method="POST">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              </form>
+                <div id="wchoose" class="row">
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('q')">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#wq" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('r');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#wr" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('b');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#wb" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('n');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#wn" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="bchoose" class="row">
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('q');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#bq" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('r');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#br" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('b');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#bb" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="sendPromoPiece('n');">
+                            <svg class="" style="width: 45px; height: 45px; overflow: hidden;">
+                                <use xlink:href="/assets/images/chessboard-sprite-staunty.svg#bn" class="piece"></use>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
             <!--<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button> -->
@@ -39,9 +114,6 @@
     </div>
 </div>
 
-<script src="/js/bootstrap.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script type="module" src="/js/play.js"> </script>
 
 </body>
 </html>

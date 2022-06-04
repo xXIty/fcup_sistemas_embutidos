@@ -62,9 +62,13 @@ app.post("/game/:gid/delete", function (req, res) {
 app.post("/game/:gid/edit", function (req, res) {
     be.editGameById(req, res);
 });
+app.post("/game/promotion", function (req, res) {
+    //be.(req, res);
+    be.pawnPromotion(req, res, fifo_path);
+});
 
 app.get("/current", function (req, res) {
-    console.log(`GET /current : getCurrentGame`)
+    //console.log(`GET /current : getCurrentGame`)
     be.getCurrentGame(req, res);
      
 });

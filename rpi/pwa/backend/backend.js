@@ -103,7 +103,7 @@ module.exports = {
                 db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
                         (err, rows)=> {
                             fens = rows.flatMap(r => r.fen);
-                            currentGame = {gid: game.id, fens: fens, name: game.name}
+                            currentGame = {gid: game.id, fens: fens, name: game.name, interaction: game.interaction }
                             res.json(currentGame);
                         });
                 return
@@ -138,6 +138,12 @@ module.exports = {
             } else {
                 res.redirect("/analyze");
             }
+        });
+    },
+    pawnPromotion: function (req, res, fifo_path) {
+        db.run(`UPDATE games SET interaction = false WHERE playing = true`, (err, row) => {
+            writeToPipe(fifo_path,req.body.piece); 
+
         });
     }
 };

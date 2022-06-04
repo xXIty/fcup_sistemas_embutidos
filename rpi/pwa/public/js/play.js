@@ -8,45 +8,61 @@ var board = new Chessboard(document.getElementById("board"), {
     }
 })
 var fens = []
- var index = 0;
- var max = 0;
+var index = 0;
+var max = 0;
 var current = "";
-(function() {
-    var poll = function() {
-      $.ajax({
-        url: '/current',
-        dataType: 'json',
-        type: 'get',
-        success: function(data) { // check if available
-            console.log(index, data.fens.length);
-            fens = data.fens
-            if( index == max) { // Most recent on last poll, check updates
-                if (fens.length-1 > max) {
-                    console.log(`Setting ${index}, ${fens[index]}`);
-                    index = max = fens.length-1;
-                    if( current != fens[index] ) {
-                        board.setPosition(fens[index]);
-                        current = fens[index];
-                    } else {
-                        console.log("SAME POS!!")
-                    }
+
+
+
+function openPromoModal(turn) {
+    console.log('OPEN MODAL')
+    var wpieces = document.getElementById('wchoose')
+    var bpieces = document.getElementById('bchoose')
+
+    if (turn % 2 == 0) {
+        bpieces.style.display = 'none';
+        wpieces.style.display = '';
+    } else {
+        wpieces.style.display = 'none';
+        bpieces.style.display = '';
+    }
+    $("#promoModal").modal('show')
+}
+
+function poll() {
+  $.ajax({
+    url: '/current',
+    dataType: 'json',
+    type: 'get',
+    success: function(data) { // check if available
+        if(data.interaction) return openPromoModal(max)
+        fens = data.fens
+        if( index == max) { // Most recent on last poll, check updates
+            if (fens.length-1 > max) {
+                console.log(`Setting ${index}, ${fens[index]}`);
+                index = max = fens.length-1;
+                if( current != fens[index] ) {
+                    board.setPosition(fens[index]);
+                    current = fens[index];
+                } else {
+                    console.log("SAME POS!!")
                 }
             }
-            if ( false ) { // end of game?
-                clearInterval(pollInterval); // optional: stop poll function
-            }
-        },
-        error: function() { // error logging
-            console.log('Error!');
-            window.location.replace('/');
         }
-      });
+        if ( false ) { // end of game?
+            clearInterval(pollInterval); // optional: stop poll function
+        }
     },
-    pollInterval = setInterval(function() { // run function every 2000 ms
-      poll();
-      }, 300);
-    poll(); // also run function on init
-})();
+    error: function() { // error logging
+        console.log('Error!');
+        window.location.replace('/');
+    }
+  });
+
+}
+var pollInterval = setInterval(poll, 300);
+poll(); // also run function on init
+
 
 function decrementIndex() {
     if(index > 0) {
