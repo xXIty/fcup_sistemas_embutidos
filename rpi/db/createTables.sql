@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     gid INTEGER NOT NULL,
     interaction BOOL NOT NULL DEFAULT false,
+    evaluation TEXT DEFAULT null,
     FOREIGN KEY (gid) REFERENCES games (id) ON DELETE CASCADE
   );
   
