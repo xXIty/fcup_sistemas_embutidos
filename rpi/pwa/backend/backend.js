@@ -27,7 +27,7 @@ function selectMostRecentGame(callback) {
             //handle error
             console.log(`currentERROR: ${err}`)
         } else {
-            callback(row);
+            callback(row)
         }
     });
 }
@@ -49,8 +49,6 @@ function selectGames(callback) {
 module.exports = {
     // POST: /game/new
     createNewGameAndRedirect: function (req, res, fifo_path) {
-
-        console.log(`POST /game/new : createNewGameAndRedirect`)
         var insert = "INSERT INTO games (name, playing, finished) VALUES ('new_game',true,false)";
         db.run(insert, (err) => {
             console.log(err)
@@ -59,11 +57,11 @@ module.exports = {
                     var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                     db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen], (err) => {
                         var fifo = fs.createWriteStream(fifo_path);
-                        fifo.write('1');
-                        fifo.close();
+                        fifo.write('1')
+                        fifo.close()
                     });
 
-                    res.redirect('/play');
+                    res.redirect('/play')
                 });
             }
         });
@@ -71,7 +69,6 @@ module.exports = {
     },
     // POST: /fen
     addNewFen: function (req, res) {
-        console.log(`POST /fen : addNewFen`)
         selectMostRecentGame(game => {
             var fen = req.params.fen;
             db.run("INSERT INTO plays (gid,fen) VALUES (?,?)", [game.id, fen]);
@@ -80,7 +77,6 @@ module.exports = {
     },
     // GET: /analyze/:gid
     analyzeGame: function(req, res) {
-        console.log(`GET /analize/${req.params.gid} : analyzeGame`)
         db.all(`SELECT fen FROM plays WHERE gid = ${req.params.gid}  ORDER BY timestamp `, (err, rows) => {
             fens = rows.flatMap(r => r.fen);
             res.render("analyze", {fens: fens});
@@ -88,7 +84,6 @@ module.exports = {
     },
     // GET: /play/:gid
     setPlayingAndRedirect: function (req, res) {
-        console.log(`GET /play/${req.params.gid} : setPlayingAndRedirect`)
         db.run(`UPDATE games SET playing = true WHERE id = ${req.params.gid}`, (err, rows) => {
             console.log(err)
             console.log(rows)
@@ -99,14 +94,17 @@ module.exports = {
     },
     // GET: /current
     getCurrentGame: function (req, res) {
-        console.log(`GET /current : setPlayingAndRedirect`)
         selectMostRecentGame( game => {
-            db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
-                    (err, rows)=> {
-                        fens = rows.flatMap(r => r.fen);
-                        currentGame = {gid: game.id, fens: fens, name: game.name}
-                        res.json(currentGame);
-                    });
+            if (game) {
+                db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
+                        (err, rows)=> {
+                            fens = rows.flatMap(r => r.fen);
+                            currentGame = {gid: game.id, fens: fens, name: game.name}
+                            res.json(currentGame);
+                        });
+                return
+            }
+            res.redirect('/')
         });
     },
     // GET: /analyze
