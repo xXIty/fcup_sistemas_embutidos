@@ -1,5 +1,5 @@
-#define ROWS_COUNT 8
-#define COLS_COUNT 2
+#define ROWS_COUNT 2
+#define COLS_COUNT 8
 #define TIME_DEBOUNCE 15
 
 #define LED_GREEN 3
@@ -9,7 +9,7 @@
 
 int get_button_pressed();
 
-int ROWS[ROWS_COUNT] = {6,7,8,9,10,11,12,13}, COLS[COLS_COUNT] = {4,5};//,12};
+int COLS[COLS_COUNT] = {6,7,8,9,10,11,12,13}, ROWS[ROWS_COUNT] = {4,5};//,12};
 
 
 void setup(){
@@ -44,17 +44,18 @@ void loop(){
     send_square(square_pos);
     int ack=get_ack();
     light_led(ack);
+    delay(TIME_DEBOUNCE*10);
   }
-  delay(TIME_DEBOUNCE*10);
+  
 }
 
-/*
+
 void serial_flush_buffer()
 {
   while (Serial.read() >= 0)
    ; // do nothing
 }
-*/
+
 
 void light_led(int ack){
   switch(ack){
@@ -75,15 +76,14 @@ void light_led(int ack){
 
 
 int get_ack(){
-  
-  if(Serial.available() > 0){
-    int ack=Serial.read();
+  int ack = -1;
+  while(Serial.available() == 0){;}
+    ack=Serial.read();
     Serial1.println("Ack received: ");
-    Serial1.println(ack, DEC);
-    Serial.flush();
-    return ack;
-  }
-  return -1;
+    Serial1.println(String(ack));
+    //Serial.flush();
+    
+  return ack;
 }
 
 
@@ -100,7 +100,7 @@ int get_button_pressed() {
       if(!readb) {
         while(!digitalRead(ROWS[R])); // wait till unpressed
         digitalWrite(COLS[C],1);
-        return C*ROWS_COUNT + R;
+        return C*8 + R;
       }
       delay(TIME_DEBOUNCE);
       

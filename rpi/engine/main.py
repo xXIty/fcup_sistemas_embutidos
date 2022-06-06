@@ -171,6 +171,8 @@ def board_make_move_uci(db_connection, game_id, board, move_uci, fifo):
         move_san  =  chess.Move.from_uci(move_uci)
     except ValueError as ve:
         print("\t[+] Moviment mal formatat. Error: "+str(ve))
+        uart_send_byte(bytes([LED_RED]))
+        return
 
     if(is_promoting(board, move_san)):
         # Is a promotion. Need to ask the user.
