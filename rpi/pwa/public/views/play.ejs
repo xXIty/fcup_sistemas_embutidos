@@ -33,8 +33,21 @@ function sendPromoPiece(piece) {
 </script>
 
 <div id="board"></div>
-<button class="btn btn-dark" id="but-prev" ><i class="bi bi-arrow-left"></i></button>
-<button class="btn btn-dark" id="but-next" ><i class="bi bi-arrow-right"></i></button>
+
+<div class="row">
+    <div class="col-4">
+        <button class="btn btn-dark" id="but-prev" ><i class="bi bi-arrow-left"></i></button>
+        <button class="btn btn-dark" id="but-next" ><i class="bi bi-arrow-right"></i></button>
+    </div>
+    <div class="col-4">
+
+    </div>
+    <div class="col-4">
+        <div id="score" class="alert alert-primary" role="alert">
+        </div>
+
+    </div>
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="promoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="promoModalLabel" aria-hidden="true">
