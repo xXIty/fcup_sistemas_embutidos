@@ -171,6 +171,8 @@ def board_make_move_uci(db_connection, game_id, board, move_uci, fifo):
         move_san  =  chess.Move.from_uci(move_uci)
     except ValueError as ve:
         print("\t[+] Moviment mal formatat. Error: "+str(ve))
+        uart_send_byte(bytes([LED_RED]))
+        return
 
     if(is_promoting(board, move_san)):
         # Is a promotion. Need to ask the user.
@@ -216,7 +218,7 @@ def game_playing_play(db_connection):
     while board_move := get_board_move_uci(db_connection):
         game_id_aux  =  board_move[0]
         move_uci     =  board_move[1]
-        move_uci = input("Insert a uci move (ex: a2a3): ") # quick way to play (mock)
+        #move_uci = input("Insert a uci move (ex: a2a3): ") # quick way to play (mock)
 
 
         # Update board if game has changed
