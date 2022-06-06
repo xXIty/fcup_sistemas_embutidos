@@ -8,11 +8,18 @@ import chess
 import string
 import sqlite3
 from time import sleep
+import serial
+
 
 
 # Named pipe command
 COM_GAME_PLAY = "1"
 COM_PAWN_PROM = "2"
+
+# Arduino LED codes
+LED_GREEN  =  0
+LED_RED    =  1
+LED_OFF    =  2
 
 
 # DB queries
@@ -71,6 +78,9 @@ def uart_rec_square_mockup():
 
 def uart_rec_square():
     return uart_rec_square_mockup()
+
+def uart_send_byte(byte):
+    serial_com.write(byte)
 
 
 # Named PIPE handling
@@ -144,6 +154,7 @@ def get_board_move_uci(db_connection):
             return None
         elif game_id != game_id_aux or move_begin is None:
             move_begin = board_square
+            uart_send_byte(bytes([LED_OFF]))
         else:
             move_end = board_square
 
@@ -181,12 +192,15 @@ def board_make_move_uci(db_connection, game_id, board, move_uci, fifo):
         move_san.promotion = piece.piece_type
         print("\t[+] Generating new move {} with promotion of piece {}".format(move_uci,piece.symbol()))
 
+    # Push the move if it is legal move
     if(move_san in board.legal_moves):
+        uart_send_byte(bytes([LED_GREEN]))
         board.push(move_san)
         fen = board.fen()
         db_insert_fen(db_connection, game_id, fen)
         print("\t[+] Move done successfully")
     else:
+        uart_send_byte(bytes([LED_RED]))
         print("\t[!] Bad move")
 
 
@@ -260,6 +274,9 @@ if __name__ == '__main__':
     db_path             =  args.db
     fifo_path           =  args.fifo
     fifo                =  None
+    serial_com          = serial.Serial('/dev/ttyACM0',9600)
+
+    serial_com.reset_input_buffer()
 
     try:
         os.mkfifo(fifo_path)

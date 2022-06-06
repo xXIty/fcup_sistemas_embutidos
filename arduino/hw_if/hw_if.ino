@@ -1,6 +1,7 @@
-#define ROWS_COUNT 2
-#define COLS_COUNT 1
+#define ROWS_COUNT 8
+#define COLS_COUNT 2
 #define TIME_DEBOUNCE 15
+
 #define LED_GREEN 3
 #define LED_RED 2
 
@@ -8,7 +9,7 @@
 
 int get_button_pressed();
 
-int ROWS[ROWS_COUNT] = {2,3}, COLS[COLS_COUNT] = {11};//,12};
+int ROWS[ROWS_COUNT] = {6,7,8,9,10,11,12,13}, COLS[COLS_COUNT] = {4,5};//,12};
 
 
 void setup(){
@@ -37,11 +38,12 @@ void setup(){
 void loop(){
 
   int square_pos = get_button_pressed();
-  if (square_pos != -1)
+  if (square_pos != -1) {
     //serial_flush_buffer();
     send_square(square_pos);
     int ack=get_ack();
     light_led(ack);
+  }
   delay(TIME_DEBOUNCE*10);
 }
 
@@ -63,18 +65,24 @@ void light_led(int ack){
       turn_led_off(LED_GREEN);
       turn_led_on(LED_RED);
       break;
+    case 2:
+      turn_led_off(LED_GREEN);
+      turn_led_off(LED_RED);
+      break;
   }
 }
 
 
 int get_ack(){
-  if(Serial.avaiable()>0){
+  
+  if(Serial.available() > 0){
     int ack=Serial.read();
-    Serial.println(String("Ack received: "+ack));
+    Serial.println("Ack received: ");
+    Serial.println(ack, DEC);
     Serial.flush();
     return ack;
   }
-  return -1
+  return -1;
 }
 
 
