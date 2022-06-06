@@ -1,3 +1,4 @@
+from time import sleep
 import chess
 #import string
 import sqlite3
@@ -36,3 +37,4 @@ def update_eval():
 
 while 1:
     update_eval()
+    sleep(1)
