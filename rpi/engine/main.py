@@ -8,11 +8,18 @@ import chess
 import string
 import sqlite3
 from time import sleep
+import serial
+
 
 
 # Named pipe command
 COM_GAME_PLAY = "1"
 COM_PAWN_PROM = "2"
+
+# Arduino LED codes
+LED_GREEN  =  0
+LED_RED    =  1
+LED_OFF    =  2
 
 
 # DB queries
@@ -58,7 +65,7 @@ def db_update_games_finished(db_connection, game_id, reason, winner):
 def db_set_promotion_handle(db_connection, game_id):
     query = "UPDATE games SET interaction = true WHERE id = (?);"
     cursor = db_connection.cursor()
-    cursor.execute(query, (str(game_id)))
+    cursor.execute(query, (str(game_id),))
     db_connection.commit()
 
 
@@ -70,13 +77,18 @@ def uart_rec_square_mockup():
     return square
 
 def uart_rec_square():
-    return uart_rec_square_mockup()
+    #return uart_rec_square_mockup()
+    char = serial_com.readline().decode('utf-8').rstrip();
+    return int(char)
+
+def uart_send_byte(byte):
+    serial_com.write(byte)
 
 
 # Named PIPE handling
 # --------------------
 
-def pipe_command_rec(fifo_path):
+def pipe_command_rec(fifo):
     try:
         os.mkfifo(fifo_path)
     except OSError as oe:
@@ -144,6 +156,7 @@ def get_board_move_uci(db_connection):
             return None
         elif game_id != game_id_aux or move_begin is None:
             move_begin = board_square
+            uart_send_byte(bytes([LED_OFF]))
         else:
             move_end = board_square
 
@@ -152,7 +165,7 @@ def get_board_move_uci(db_connection):
     move_uci = chess.SQUARE_NAMES[move_begin] + chess.SQUARE_NAMES[move_end] 
     return game_id, move_uci
 
-def board_make_move_uci(db_connection, game_id, board, move_uci, fifo_path):
+def board_make_move_uci(db_connection, game_id, board, move_uci, fifo):
     move_san = None
     try:
         move_san  =  chess.Move.from_uci(move_uci)
@@ -162,23 +175,34 @@ def board_make_move_uci(db_connection, game_id, board, move_uci, fifo_path):
     if(is_promoting(board, move_san)):
         # Is a promotion. Need to ask the user.
         print("\t[+] Move is a pawn promotion")
-        db_set_promotion_handle(db_connection, game_id)
-        sleep(1)
 
+        # Clean fifo
+        fifo.read()
+
+        # Warn for pawn promotion to pwa
+        db_set_promotion_handle(db_connection, game_id)
+
+        # Read choosed piece
         piece_sym = ""
-        with open(fifo_path) as fifo:
+        while len(piece_sym) == 0:
             piece_sym = fifo.read(1)
+            sleep(0.5)
+
+        print("Read from fifo: " + str(piece_sym))
 
         piece = chess.Piece.from_symbol(piece_sym)
         move_san.promotion = piece.piece_type
         print("\t[+] Generating new move {} with promotion of piece {}".format(move_uci,piece.symbol()))
 
+    # Push the move if it is legal move
     if(move_san in board.legal_moves):
+        uart_send_byte(bytes([LED_GREEN]))
         board.push(move_san)
         fen = board.fen()
         db_insert_fen(db_connection, game_id, fen)
         print("\t[+] Move done successfully")
     else:
+        uart_send_byte(bytes([LED_RED]))
         print("\t[!] Bad move")
 
 
@@ -205,7 +229,7 @@ def game_playing_play(db_connection):
         # Process move
         print("\t[+] FEN: " + str(fen_latest))
         print("\t[+] Processing move: " + move_uci)
-        board_make_move_uci(db_connection, game_id, board, move_uci, fifo_path)
+        board_make_move_uci(db_connection, game_id, board, move_uci, fifo)
 
         # Handle game over
         if board.is_game_over():
@@ -251,6 +275,18 @@ if __name__ == '__main__':
     db_connection       =  None
     db_path             =  args.db
     fifo_path           =  args.fifo
+    fifo                =  None
+    serial_com          = serial.Serial('/dev/ttyACM0',9600)
+
+    serial_com.reset_input_buffer()
+
+    try:
+        os.mkfifo(fifo_path)
+    except OSError as oe:
+        if oe.errno != errno.EEXIST:
+            raise
+
+    fifo = open(fifo_path)
 
     print("[+] Opening connection to sqlite")
     try:
@@ -260,7 +296,7 @@ if __name__ == '__main__':
         print("Error: " + str(e))
         quit()
 
-    while command_from_pwa := pipe_command_rec(fifo_path):
+    while command_from_pwa := fifo.read(1):
         if command_from_pwa == COM_GAME_PLAY:
             game_playing_play(db_connection)
 
