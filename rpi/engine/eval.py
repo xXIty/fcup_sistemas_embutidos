@@ -13,18 +13,26 @@ def get_eval(play_id):
 	return eval_value
 '''
 def update_eval():
-	engine = chess.engine.SimpleEngine.popen_uci("../rpi/engine/stockfish")
-	con = sqlite3.connect('../pwa/db.sqlite')
-	cur = con.cursor()
-	cur.execute("select * from plays order by Timestamp DESC limit 1")
-	last_play=cur.fetchone()
-	fen=last_play["fen"]
-	play_id=last_play["id"]
-	#board = chess.Board("r1bqkbnr/p1pp1ppp/1pn5/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 2 4")
-	#when we have values
-	board = chess.Board(fen)
-	eval_score = engine.analyse(board, chess.engine.Limit(depth=20))
-	#print("Score:", info["score"])
-	cur.execute("update plays set (evaluation) values (?) where id=(?)", (eval_score,play_id))
-	con.commit()
-	engine.quit()
+        engine = chess.engine.SimpleEngine.popen_uci("./stockfish")
+        con = sqlite3.connect('../db/db.sqlite')
+        con.row_factory  =  sqlite3.Row                                                              
+        cur = con.cursor()
+        cur.execute("select id,fen from plays where score IS NULL;")
+        rows = cur.fetchall()
+        
+        for r in rows:
+            fen = r['fen']
+            rid = r['id']
+            print(rid)
+            board = chess.Board(fen)
+            eval_score = engine.analyse(board, chess.engine.Limit(depth=20))
+            score = eval_score['score'].relative.score()/100.0
+            print(score)
+            cur.execute("update plays set score='{}' where id={}".format(score,rid))
+            con.commit()
+        engine.quit()
+
+        con.close()
+
+while 1:
+    update_eval()
