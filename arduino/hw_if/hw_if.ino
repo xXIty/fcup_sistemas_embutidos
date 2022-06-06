@@ -30,7 +30,8 @@ void setup(){
   digitalWrite(3,LOW);
   
   Serial.begin(9600);
-  Serial.println(String("Setup done"));
+  Serial1.begin(9600);
+  Serial1.println(String("Setup done"));
   
 }
 
@@ -77,8 +78,8 @@ int get_ack(){
   
   if(Serial.available() > 0){
     int ack=Serial.read();
-    Serial.println("Ack received: ");
-    Serial.println(ack, DEC);
+    Serial1.println("Ack received: ");
+    Serial1.println(ack, DEC);
     Serial.flush();
     return ack;
   }

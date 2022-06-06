@@ -77,7 +77,9 @@ def uart_rec_square_mockup():
     return square
 
 def uart_rec_square():
-    return uart_rec_square_mockup()
+    #return uart_rec_square_mockup()
+    char = serial_com.readline().decode('utf-8').rstrip();
+    return int(char)
 
 def uart_send_byte(byte):
     serial_com.write(byte)
