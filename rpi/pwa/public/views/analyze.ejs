@@ -14,8 +14,20 @@
 <h2>Analyze Game</h2>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <div id="board"></div>
-<button id="but-prev" class="btn btn-dark"> <i class="bi bi-arrow-left"></i></button>
-<button id="but-next" class="btn btn-dark"> <i class="bi bi-arrow-right"></i> </button>
+<div class="row">
+    <div class="col-4">
+        <button class="btn btn-dark" id="but-prev" ><i class="bi bi-arrow-left"></i></button>
+        <button class="btn btn-dark" id="but-next" ><i class="bi bi-arrow-right"></i></button>
+    </div>
+    <div class="col-4">
+
+    </div>
+    <div class="col-4">
+        <div id="score" class="alert alert-primary" role="alert">
+        </div>
+
+    </div>
+</div>
 <script type="module">
     import {Chessboard} from "/js/Chessboard.js"
 
@@ -27,21 +39,25 @@
         }
     })
     var fens = <%- JSON.stringify(fens)  %>;
+    var scores = <%- JSON.stringify(scores)  %>;
     var max = fens.length-1;
     var index = max;
     board.setPosition(fens[max]);
+    document.getElementById('score').innerText = scores[max]
     
 
     function decrementIndex() {
         if(index > 0) {
             index -= 1;
             board.setPosition(fens[index]);
+            document.getElementById('score').innerText = scores[index]
         }
     }
     function incrementIndex() {
         if (index < max) {
             index += 1;
             board.setPosition(fens[index]);
+            document.getElementById('score').innerText = scores[index]
         }
     }
 

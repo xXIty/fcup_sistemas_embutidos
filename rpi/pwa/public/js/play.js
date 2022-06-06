@@ -8,6 +8,7 @@ var board = new Chessboard(document.getElementById("board"), {
     }
 })
 var fens = []
+var scores = []
 var index = 0;
 var max = 0;
 var current = "";
@@ -29,6 +30,10 @@ function openPromoModal(turn) {
     $("#promoModal").modal('show')
 }
 
+function setScore(score) {
+    document.getElementById('score').innerText = score
+}
+
 function poll() {
   $.ajax({
     url: '/current',
@@ -37,6 +42,7 @@ function poll() {
     success: function(data) { // check if available
         if(data.interaction) return openPromoModal(max)
         fens = data.fens
+        scores = data.scores
         if( index == max) { // Most recent on last poll, check updates
             if (fens.length-1 > max) {
                 console.log(`Setting ${index}, ${fens[index]}`);
@@ -44,6 +50,7 @@ function poll() {
                 if( current != fens[index] ) {
                     board.setPosition(fens[index]);
                     current = fens[index];
+                    setScore(scores[index])
                 } else {
                     console.log("SAME POS!!")
                 }
@@ -68,12 +75,14 @@ function decrementIndex() {
     if(index > 0) {
         index -= 1;
         board.setPosition(fens[index]);
+        setScore(scores[index])
     }
 }
 function incrementIndex() {
     if (index < max) {
         index += 1;
         board.setPosition(fens[index]);
+        setScore(scores[index])
     }
 }
 

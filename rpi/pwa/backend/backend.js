@@ -82,9 +82,10 @@ module.exports = {
     },
     // GET: /analyze/:gid
     analyzeGame: function(req, res) {
-        db.all(`SELECT fen FROM plays WHERE gid = ${req.params.gid}  ORDER BY timestamp `, (err, rows) => {
+        db.all(`SELECT fen, score FROM plays WHERE gid = ${req.params.gid}  ORDER BY timestamp `, (err, rows) => {
             fens = rows.flatMap(r => r.fen);
-            res.render("analyze", {fens: fens});
+            scores = rows.flatMap(r => r.score);
+            res.render("analyze", {fens: fens, scores: scores});
         });
     },
     // GET: /play/:gid
@@ -100,10 +101,11 @@ module.exports = {
     getCurrentGame: function (req, res) {
         selectMostRecentGame( game => {
             if (game) {
-                db.all(`SELECT fen FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
+                db.all(`SELECT fen, score FROM plays WHERE gid = ${game.id}  ORDER BY timestamp `,
                         (err, rows)=> {
                             fens = rows.flatMap(r => r.fen);
-                            currentGame = {gid: game.id, fens: fens, name: game.name, interaction: game.interaction }
+                            scores = rows.flatMap(r => r.score);
+                            currentGame = {gid: game.id, fens: fens, name: game.name, interaction: game.interaction, scores: scores }
                             res.json(currentGame);
                         });
                 return
